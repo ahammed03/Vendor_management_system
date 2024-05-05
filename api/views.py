@@ -13,3 +13,7 @@ class VendorListCreate(generics.ListCreateAPIView):
     serializer_class = VendorSerializer
     def perform_create(self, serializer):
         serializer.save(vendor_code=uuid4()) 
+
+class VendorRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Vendor.objects.all()
+    serializer_class = VendorSerializer
