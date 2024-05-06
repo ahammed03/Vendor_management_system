@@ -41,13 +41,14 @@ def update_performance_metrics(sender, instance, created, **kwargs):
     if not created:
         print("hello")
         vendor = instance.vendor
+        update_fulfillment_rate(vendor)
         if instance.status == 'completed':
             print("dbjf")
             # update_on_time_delivery_rate(vendor)
         #     update_quality_rating_avg(vendor, instance.quality_rating)
         # if instance.acknowledgment_date:
         #     update_average_response_time(vendor, instance.acknowledgment_date - instance.issue_date)
-        # update_fulfillment_rate(vendor)
+        
 
 # Helper functions to update performance metrics
 def update_on_time_delivery_rate(vendor):
@@ -77,9 +78,9 @@ def update_average_response_time(vendor, response_time):
 
 def update_fulfillment_rate(vendor):
     completed_orders = PurchaseOrder.objects.filter(vendor=vendor, status='completed')
-    successful_orders = completed_orders.exclude(quality_rating__lt=0)
+    successful_orders = completed_orders.exclude(quality_rating = 0)
     total_completed = completed_orders.count()
     total_successful = successful_orders.count()
-    if total_completed > 0:
+    if total_completed > 0 and total_successful > 0:
         vendor.fulfillment_rate = (total_successful / total_completed) * 100
         vendor.save()
