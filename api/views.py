@@ -52,17 +52,21 @@ class PurchaseOrderAcknowledgeUpdateView(APIView):
         try:
             purchase_order = PurchaseOrder.objects.get(pk=pk)
             if purchase_order.status == 'completed' or purchase_order.status == 'canceled':
-                return Response(f"Purchase Order Status has Changed to {purchase_order.status}")
+                return Response(f"Purchase Order Status has already Changed to {purchase_order.status}")
         except PurchaseOrder.DoesNotExist:
             return Response({"error": "PurchaseOrder not found"}, status=404)
         try:
             po_status = request.data.get('status')
             if po_status not in ['completed', 'canceled']:
                 return Response("Invalid data" , status=404) 
-                # Change the status to correct
+                # Change the status to correct    
             else:
+                delivery_date = request.data.get('delivery_date')
                 if po_status != "canceled":
-                    purchase_order.delivery_date = timezone.now() + timedelta(days = 7)
+                    if delivery_date:
+                        purchase_order.delivery_date = delivery_date
+                    else: 
+                        purchase_order.delivery_date = timezone.now() + timedelta(days = 7)
                 purchase_order.status = po_status
             purchase_order.acknowledgment_date = timezone.now() 
             purchase_order.save()
