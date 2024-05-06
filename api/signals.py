@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import PurchaseOrder,Vendor
-
+from django.db import models
 
 # Signals
 @receiver(post_save, sender=PurchaseOrder)
