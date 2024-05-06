@@ -14,3 +14,7 @@ class PurchaseOrderCreateSerializer(serializers.ModelSerializer):
         model = PurchaseOrder 
         fields = ['vendor', 'items', 'quantity']
 
+class VendorPeformanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vendor 
+        exclude = ['id', 'contact_details','address']

@@ -1,7 +1,9 @@
 from django.shortcuts import render,HttpResponse
 from .models import Vendor, PurchaseOrder
-from .serializers import VendorSerializer,PurchaseOrderListSerializer, PurchaseOrderCreateSerializer
+from .serializers import VendorSerializer,PurchaseOrderListSerializer, PurchaseOrderCreateSerializer, VendorPeformanceSerializer
 from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.views import APIView 
 from uuid import uuid4
 from datetime import timedelta
 from django.utils import timezone
@@ -33,9 +35,52 @@ class PurchaseOrderListView(generics.ListCreateAPIView):
             queryset = queryset.filter(vendor=vendor)
         return queryset
     def perform_create(self, serializer):
-        serializer.save(po_number=uuid4(), delivery_date = timezone.now() + timedelta(days = 7)) 
+        serializer.save(po_number=uuid4()) 
 
 class PurchaseOrderRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = PurchaseOrder.objects.all()
     serializer_class = PurchaseOrderListSerializer
     # customize the serializer for put
+
+class VendorPerformanceListView(generics.RetrieveAPIView):
+    queryset = Vendor.objects.all()
+    serializer_class = VendorPeformanceSerializer
+
+
+class PurchaseOrderAcknowledgeUpdateView(APIView):
+    def put(self,request,pk):
+        try:
+            purchase_order = PurchaseOrder.objects.get(pk=pk)
+            if purchase_order.status == 'completed':
+                return Response("Purchase Order is Completed")
+        except PurchaseOrder.DoesNotExist:
+            return Response({"error": "PurchaseOrder not found"}, status=404)
+        try:
+            po_status = request.data.get('status') or "acknowledge"
+            po_quality_rating = request.data.get('quality_rating') or 3
+            if po_status == 'completed':
+                delivery_date = timezone.now()
+            else:
+                delivery_date = timezone.now() + timedelta(days = 7)
+            if po_status != 'canceled':
+                purchase_order.delivery_date = delivery_date
+            purchase_order.quality_rating = po_quality_rating
+            purchase_order.acknowledgment_date = timezone.now()  # assuming timezone is imported
+            purchase_order.status = po_status
+            purchase_order.save()
+            serializer = PurchaseOrderListSerializer(purchase_order)
+            return Response(serializer.data)
+        except Exception as e:
+            print(e)
+            return Response("Error While Creating Acknowledgement",status=500) 
+
+
+
+def time_difference(start_date,end_date):
+    from datetime import datetime, timedelta
+    # Define the datetime objects
+    start_date = datetime.strptime(str(start_date), '%Y-%m-%d %H:%M:%S.%f%z')
+    end_date  = datetime.strptime(str(end_date), '%Y-%m-%d %H:%M:%S.%f%z')
+    # Calculate the time difference
+    time_difference = end_date - start_date 
+    return time_difference
