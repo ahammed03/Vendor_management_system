@@ -8,10 +8,11 @@ from django.db import models
 def update_performance_metrics(sender, instance, created, **kwargs):
     if not created:
         print("hello")
-        vendor = instance.vendor
-        update_fulfillment_rate(vendor)
-        if instance.status == 'completed':
-            print("dbjf")
+        # vendor = instance.vendor
+        # if instance.status == 'completed':
+        #     update_fulfillment_rate(vendor)
+        #     print("dbjf")
+        
             # update_on_time_delivery_rate(vendor)
         #     update_quality_rating_avg(vendor, instance.quality_rating)
         # if instance.acknowledgment_date:

@@ -51,25 +51,22 @@ class PurchaseOrderAcknowledgeUpdateView(APIView):
     def put(self,request,pk):
         try:
             purchase_order = PurchaseOrder.objects.get(pk=pk)
-            if purchase_order.status == 'completed':
-                return Response("Purchase Order is Completed")
+            if purchase_order.status == 'completed' or purchase_order.status == 'canceled':
+                return Response(f"Purchase Order Status has Changed to {purchase_order.status}")
         except PurchaseOrder.DoesNotExist:
             return Response({"error": "PurchaseOrder not found"}, status=404)
         try:
-            po_status = request.data.get('status') or "acknowledge"
-            po_quality_rating = request.data.get('quality_rating') or 3
-            if po_status == 'completed':
-                delivery_date = timezone.now()
+            po_status = request.data.get('status')
+            if po_status not in ['completed', 'canceled']:
+                return Response("Invalid data" , status=404) 
+                # Change the status to correct
             else:
-                delivery_date = timezone.now() + timedelta(days = 7)
-            if po_status != 'canceled':
-                purchase_order.delivery_date = delivery_date
-            purchase_order.quality_rating = po_quality_rating
-            purchase_order.acknowledgment_date = timezone.now()  # assuming timezone is imported
-            purchase_order.status = po_status
+                if po_status != "canceled":
+                    purchase_order.delivery_date = timezone.now() + timedelta(days = 7)
+                purchase_order.status = po_status
+            purchase_order.acknowledgment_date = timezone.now() 
             purchase_order.save()
-            serializer = PurchaseOrderListSerializer(purchase_order)
-            return Response(serializer.data)
+            return Response(f"Status of the order Changed to {purchase_order.status} Successfully")
         except Exception as e:
             print(e)
             return Response("Error While Creating Acknowledgement",status=500) 
