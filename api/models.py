@@ -23,6 +23,7 @@ class PurchaseOrder(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
     order_date = models.DateTimeField(auto_now_add=True)
     delivery_date = models.DateTimeField(null=True)
+    original_delivery_date = models.DateTimeField(null=True)
     items = models.JSONField()
     quantity = models.IntegerField() 
     status = models.CharField(max_length=100,choices=STATUS_CHOICES, default='pending')
@@ -33,9 +34,6 @@ class PurchaseOrder(models.Model):
     def __str__(self):
         return str(self.id)
 
-
-
-
 class HistoricPerformance(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
@@ -43,3 +41,6 @@ class HistoricPerformance(models.Model):
     quality_rating_avg = models.FloatField(null = True)
     average_response_time =  models.FloatField(null = True)
     fulfillment_rate =  models.FloatField(null = True)
+
+    def __str__(self) -> str:
+        return self.vendor.name

@@ -1,5 +1,5 @@
 from django.shortcuts import render,HttpResponse
-from .models import Vendor, PurchaseOrder
+from .models import Vendor, PurchaseOrder, HistoricPerformance
 from .serializers import VendorSerializer,PurchaseOrderListSerializer, PurchaseOrderCreateSerializer, VendorPeformanceSerializer
 from rest_framework import generics
 from rest_framework.response import Response
@@ -77,11 +77,13 @@ class PurchaseOrderAcknowledgeUpdateView(APIView):
 
 
 
-def time_difference(start_date,end_date):
-    from datetime import datetime, timedelta
-    # Define the datetime objects
-    start_date = datetime.strptime(str(start_date), '%Y-%m-%d %H:%M:%S.%f%z')
-    end_date  = datetime.strptime(str(end_date), '%Y-%m-%d %H:%M:%S.%f%z')
-    # Calculate the time difference
-    time_difference = end_date - start_date 
-    return time_difference
+
+def insert_into_historic_model(sender,instance,created,**kwargs):
+    performance_metrics = Vendor.objects.get(pk = instance)
+    HistoricPerformance.objects.create(vendor = performance_metrics, 
+                                average_response_time = performance_metrics.average_response_time, 
+                                on_time_delivery_rate = performance_metrics.on_time_delivery_rate, 
+                                quality_rating_avg = performance_metrics.quality_rating_avg,
+                                fulfillment_rate = performance_metrics.fulfillment_rate)
+        
+

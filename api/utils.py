@@ -3,15 +3,13 @@ from django.db import models
 from datetime import datetime
 
 
-# Helper functions to update performance metrics
-def update_on_time_delivery_rate(vendor,PurchaseOrder):
-    completed_orders = PurchaseOrder.objects.filter(vendor=vendor, status='completed')
-    on_time_orders = completed_orders.filter(delivery_date=models.F('acknowledgment_date'))
-    total_completed = completed_orders.count()
-    total_on_time = on_time_orders.count()
-    if total_completed > 0:
-        vendor.on_time_delivery_rate = (total_on_time / total_completed) * 100
-        vendor.save()
+
+def update_on_time_delivery_rate(vendor, PurchaseOrder):
+    completed_orders = PurchaseOrder.objects.filter(status='completed',vendor=vendor)
+    on_time_deliveries = completed_orders.filter(original_delivery_date__lte=models.F('delivery_date'))
+    on_time_delivery_rate = (on_time_deliveries.count() / completed_orders.count()) * 100 if completed_orders.count() else 0
+    vendor.on_time_delivery_rate = on_time_delivery_rate
+    vendor.save()
 
 def update_quality_rating_avg(vendor, PurchaseOrder):
     completed_orders = PurchaseOrder.objects.filter(vendor=vendor, status='completed')
