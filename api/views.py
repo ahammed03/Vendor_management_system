@@ -78,12 +78,6 @@ class PurchaseOrderAcknowledgeUpdateView(APIView):
 
 
 
-def insert_into_historic_model(sender,instance,created,**kwargs):
-    performance_metrics = Vendor.objects.get(pk = instance)
-    HistoricPerformance.objects.create(vendor = performance_metrics, 
-                                average_response_time = performance_metrics.average_response_time, 
-                                on_time_delivery_rate = performance_metrics.on_time_delivery_rate, 
-                                quality_rating_avg = performance_metrics.quality_rating_avg,
-                                fulfillment_rate = performance_metrics.fulfillment_rate)
+
         
 
